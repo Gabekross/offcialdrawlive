@@ -1,0 +1,2472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JCL26 Official Draw</title>
+  <style>
+    :root {
+      --black: #02040a;
+      --navy: #071225;
+      --navy-2: #0a1b34;
+      --blue: #1a7cff;
+      --cyan: #68f0ff;
+      --gold: #f5c765;
+      --gold-2: #a97622;
+      --green: #27f78a;
+      --white: #eef7ff;
+      --muted: #9db0c8;
+      --glass: rgba(8, 20, 40, 0.66);
+      --safe-x: clamp(24px, 4vw, 76px);
+      --safe-y: clamp(20px, 4vh, 54px);
+      --panel-radius: 8px;
+      --font-display: Impact, Haettenschweiler, "Arial Narrow Bold", "Arial Black", sans-serif;
+      --font-sports: "Arial Narrow", "Roboto Condensed", "Franklin Gothic Medium", Arial, sans-serif;
+      --font-body: Montserrat, "Segoe UI", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--font-body);
+    }
+
+    body {
+      letter-spacing: 0;
+    }
+
+    .stage {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      min-height: 620px;
+      isolation: isolate;
+      background:
+        radial-gradient(circle at 52% 72%, rgba(31, 194, 255, 0.13), transparent 29%),
+        radial-gradient(circle at 22% 10%, rgba(36, 247, 138, 0.10), transparent 26%),
+        radial-gradient(circle at 80% 6%, rgba(245, 199, 101, 0.16), transparent 25%),
+        linear-gradient(128deg, #02040a 0%, #05101f 38%, #08162d 70%, #02040a 100%);
+    }
+
+    .stage::before,
+    .stage::after {
+      content: "";
+      position: absolute;
+      inset: -16%;
+      z-index: -7;
+      pointer-events: none;
+    }
+
+    .stage::before {
+      background:
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 78px),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 66px);
+      transform: perspective(900px) rotateX(63deg) translateY(18%);
+      opacity: 0.45;
+      animation: gridDrift 18s linear infinite;
+    }
+
+    .stage::after {
+      background:
+        radial-gradient(ellipse at center, transparent 0 42%, rgba(0, 0, 0, 0.58) 74%, rgba(0, 0, 0, 0.9) 100%);
+      z-index: 25;
+      mix-blend-mode: multiply;
+    }
+
+    .stadium {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      z-index: -6;
+    }
+
+    .stadium__ring {
+      position: absolute;
+      left: 50%;
+      bottom: -14vh;
+      width: min(1500px, 118vw);
+      height: 38vh;
+      border: 1px solid rgba(104, 240, 255, 0.17);
+      border-radius: 50% 50% 0 0;
+      transform: translateX(-50%);
+      background:
+        radial-gradient(ellipse at center, rgba(10, 17, 30, 0.1), rgba(0, 0, 0, 0.78) 72%),
+        linear-gradient(90deg, transparent, rgba(245, 199, 101, 0.08), transparent);
+      box-shadow: 0 -30px 90px rgba(25, 124, 255, 0.12), inset 0 30px 80px rgba(39, 247, 138, 0.08);
+    }
+
+    .stadium__ring::before {
+      content: "";
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      top: 23%;
+      height: 34px;
+      border-radius: 100%;
+      background: repeating-linear-gradient(90deg, rgba(238, 247, 255, 0.12) 0 2px, transparent 2px 15px);
+      filter: blur(1px);
+      opacity: 0.55;
+    }
+
+    .beam {
+      position: absolute;
+      top: -12vh;
+      width: 13vw;
+      min-width: 120px;
+      height: 118vh;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.32), rgba(104, 240, 255, 0.12) 32%, transparent 78%);
+      clip-path: polygon(45% 0, 56% 0, 100% 100%, 0 100%);
+      filter: blur(18px);
+      opacity: 0.34;
+      transform-origin: top center;
+      animation: beamSweep 10s ease-in-out infinite alternate;
+    }
+
+    .beam:nth-child(1) { left: 3%; transform: rotate(-19deg); animation-delay: -2s; }
+    .beam:nth-child(2) { left: 28%; transform: rotate(-7deg); animation-delay: -4s; opacity: 0.25; }
+    .beam:nth-child(3) { right: 24%; transform: rotate(10deg); animation-delay: -6s; }
+    .beam:nth-child(4) { right: 2%; transform: rotate(22deg); animation-delay: -1s; opacity: 0.29; }
+
+    .fog {
+      position: absolute;
+      inset: auto -20% -22% -20%;
+      height: 48vh;
+      z-index: -4;
+      background:
+        radial-gradient(ellipse at 20% 55%, rgba(104, 240, 255, 0.18), transparent 48%),
+        radial-gradient(ellipse at 58% 30%, rgba(245, 199, 101, 0.12), transparent 44%),
+        radial-gradient(ellipse at 80% 60%, rgba(39, 247, 138, 0.12), transparent 38%);
+      filter: blur(30px);
+      opacity: 0.72;
+      animation: fogMove 16s ease-in-out infinite alternate;
+    }
+
+    .particles,
+    .particles::before,
+    .particles::after {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: -2;
+      background-image:
+        radial-gradient(circle, rgba(245, 199, 101, 0.78) 0 1px, transparent 1.6px),
+        radial-gradient(circle, rgba(104, 240, 255, 0.72) 0 1px, transparent 1.7px),
+        radial-gradient(circle, rgba(255, 255, 255, 0.45) 0 1px, transparent 1.8px);
+      background-size: 130px 130px, 180px 180px, 240px 240px;
+      animation: particles 24s linear infinite;
+      opacity: 0.36;
+    }
+
+    .particles::before,
+    .particles::after {
+      content: "";
+      animation-duration: 38s;
+      opacity: 0.28;
+      transform: scale(1.2);
+    }
+
+    .particles::after {
+      animation-direction: reverse;
+      opacity: 0.2;
+    }
+
+    .safe {
+      position: absolute;
+      inset: var(--safe-y) var(--safe-x) calc(var(--safe-y) + 58px);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .top-bar {
+      min-height: 44px;
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      align-items: center;
+      gap: 14px;
+      padding: 8px 14px;
+      border: 1px solid rgba(104, 240, 255, 0.22);
+      border-radius: var(--panel-radius);
+      background: linear-gradient(90deg, rgba(2, 4, 10, 0.82), rgba(9, 26, 50, 0.66), rgba(2, 4, 10, 0.78));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 12px 34px rgba(0, 0, 0, 0.34);
+      overflow: hidden;
+    }
+
+    .top-bar::after {
+      content: "";
+      position: absolute;
+      inset: var(--safe-y) var(--safe-x) auto var(--safe-x);
+      height: 44px;
+      border-radius: var(--panel-radius);
+      pointer-events: none;
+      background: linear-gradient(100deg, transparent 18%, rgba(255, 255, 255, 0.18), transparent 42%);
+      transform: translateX(-130%);
+      animation: shine 8s linear infinite;
+    }
+
+    .live-pill,
+    .on-air,
+    .location,
+    .studio {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      font-family: var(--font-sports);
+      font-size: clamp(12px, 1.08vw, 16px);
+      line-height: 1;
+      text-transform: uppercase;
+      color: #dbeeff;
+      white-space: nowrap;
+    }
+
+    .live-pill {
+      color: white;
+      font-weight: 900;
+      background: linear-gradient(135deg, #d50921, #ff3153);
+      padding: 8px 12px;
+      border-radius: 4px;
+      letter-spacing: 0.08em;
+      box-shadow: 0 0 24px rgba(255, 49, 83, 0.45);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: white;
+      box-shadow: 0 0 16px white;
+      animation: pulse 1.15s ease-in-out infinite;
+      flex: 0 0 auto;
+    }
+
+    .signal {
+      width: 19px;
+      height: 15px;
+      border-left: 2px solid var(--green);
+      border-right: 2px solid var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 14px rgba(39, 247, 138, 0.7);
+      position: relative;
+    }
+
+    .signal::before {
+      content: "";
+      position: absolute;
+      inset: 3px 5px;
+      border-left: 2px solid var(--green);
+      border-right: 2px solid var(--green);
+      border-radius: 50%;
+      opacity: 0.7;
+      animation: pulse 1.6s infinite;
+    }
+
+    .hero {
+      position: relative;
+      text-align: center;
+      padding: clamp(18px, 3vh, 34px) 0 clamp(14px, 2.4vh, 28px);
+    }
+
+    .kicker {
+      font-family: var(--font-sports);
+      font-size: clamp(11px, 1.1vw, 15px);
+      color: var(--green);
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.24em;
+      text-shadow: 0 0 18px rgba(39, 247, 138, 0.55);
+    }
+
+    h1 {
+      position: relative;
+      margin: 4px 0 0;
+      font-family: var(--font-display);
+      font-size: clamp(42px, 6.1vw, 104px);
+      line-height: 0.94;
+      font-weight: 900;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      color: transparent;
+      background:
+        linear-gradient(180deg, #fff6cb 0%, #f8d070 34%, #b97a20 52%, #fff1a9 74%, #7c5518 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      filter: drop-shadow(0 0 18px rgba(245, 199, 101, 0.28)) drop-shadow(0 4px 0 rgba(0, 0, 0, 0.55));
+      overflow: hidden;
+    }
+
+    h1::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 18%;
+      left: -22%;
+      background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+      transform: skewX(-18deg);
+      animation: titleSweep 6.5s ease-in-out infinite;
+      mix-blend-mode: screen;
+    }
+
+    h2 {
+      margin: 3px 0 0;
+      font-family: var(--font-sports);
+      font-size: clamp(20px, 2.5vw, 45px);
+      line-height: 1.04;
+      font-weight: 900;
+      text-transform: uppercase;
+      color: #eaf7ff;
+      text-shadow: 0 0 20px rgba(26, 124, 255, 0.55);
+    }
+
+    .date-line {
+      margin-top: 7px;
+      font-family: var(--font-sports);
+      font-size: clamp(13px, 1.35vw, 22px);
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: minmax(360px, 0.86fr) minmax(480px, 1.2fr);
+      gap: clamp(16px, 2vw, 30px);
+      flex: 1;
+      min-height: 0;
+      align-items: stretch;
+    }
+
+    .content.agenda-hidden {
+      grid-template-columns: 1fr;
+    }
+
+    .content.agenda-hidden .agenda-panel {
+      display: none;
+    }
+
+    .content.agenda-hidden .visual-panel {
+      grid-template-columns: minmax(260px, 0.54fr) minmax(560px, 1.46fr);
+    }
+
+    .content.agenda-hidden .showcase {
+      padding: clamp(12px, 1vw, 18px);
+    }
+
+    .content.agenda-hidden .pathway-card,
+    .content.agenda-hidden .facts {
+      display: none;
+    }
+
+    .content.agenda-hidden .emblem {
+      width: min(24vh, 220px);
+      top: 46%;
+    }
+
+    .content.agenda-hidden .draw-machine {
+      width: min(17vw, 210px);
+    }
+
+    .content.agenda-hidden .player,
+    .content.agenda-hidden .trophy,
+    .content.agenda-hidden .football {
+      opacity: 0.28;
+    }
+
+    .panel {
+      position: relative;
+      border: 1px solid rgba(104, 240, 255, 0.22);
+      border-radius: var(--panel-radius);
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.06), transparent 28%),
+        linear-gradient(180deg, rgba(11, 31, 58, 0.74), rgba(2, 7, 17, 0.77));
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -1px 0 rgba(245, 199, 101, 0.08),
+        0 24px 70px rgba(0, 0, 0, 0.46);
+      overflow: hidden;
+      backdrop-filter: blur(18px);
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(245, 199, 101, 0.58), rgba(104, 240, 255, 0.1), rgba(39, 247, 138, 0.38));
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+      pointer-events: none;
+      opacity: 0.72;
+    }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(100deg, transparent 14%, rgba(255, 255, 255, 0.12), transparent 34%);
+      transform: translateX(-130%);
+      animation: shine 10s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .agenda-panel {
+      padding: clamp(16px, 1.7vw, 24px);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 15px;
+      font-family: var(--font-sports);
+      text-transform: uppercase;
+      font-weight: 900;
+      color: white;
+    }
+
+    .panel-title span:first-child {
+      font-size: clamp(21px, 2vw, 32px);
+    }
+
+    .panel-chip {
+      font-size: clamp(10px, 0.9vw, 13px);
+      padding: 7px 9px;
+      color: var(--gold);
+      border: 1px solid rgba(245, 199, 101, 0.42);
+      border-radius: 4px;
+      background: rgba(245, 199, 101, 0.08);
+      box-shadow: 0 0 20px rgba(245, 199, 101, 0.12);
+      white-space: nowrap;
+    }
+
+    .agenda-list {
+      display: grid;
+      gap: clamp(8px, 1.05vh, 12px);
+      min-height: 0;
+      flex: 1;
+    }
+
+    .agenda-item {
+      position: relative;
+      display: grid;
+      grid-template-columns: 46px 1fr 24px;
+      align-items: center;
+      min-height: 0;
+      padding: 11px 12px 11px 0;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
+      overflow: hidden;
+      transform: translateX(-18px);
+      opacity: 0;
+      animation: agendaIn 0.75s cubic-bezier(.2,.8,.15,1) forwards;
+    }
+
+    .agenda-item:nth-child(1) { animation-delay: 0.15s; }
+    .agenda-item:nth-child(2) { animation-delay: 0.28s; }
+    .agenda-item:nth-child(3) { animation-delay: 0.41s; }
+    .agenda-item:nth-child(4) { animation-delay: 0.54s; }
+    .agenda-item:nth-child(5) { animation-delay: 0.67s; }
+    .agenda-item:nth-child(6) { animation-delay: 0.80s; }
+    .agenda-item:nth-child(7) { animation-delay: 0.93s; }
+    .agenda-item:nth-child(8) { animation-delay: 1.06s; }
+
+    .agenda-item::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      background: linear-gradient(180deg, var(--gold), var(--green), var(--blue));
+      box-shadow: 0 0 18px rgba(245, 199, 101, 0.55);
+      animation: sideGlow 2.6s ease-in-out infinite;
+    }
+
+    .agenda-item:hover {
+      transform: translateX(0) scale(1.01);
+      border-color: rgba(245, 199, 101, 0.38);
+      box-shadow: 0 0 28px rgba(26, 124, 255, 0.18);
+    }
+
+    .number {
+      width: 46px;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      color: var(--gold);
+      font-family: var(--font-sports);
+      font-weight: 900;
+      font-size: clamp(14px, 1.35vw, 20px);
+      text-shadow: 0 0 12px rgba(245, 199, 101, 0.5);
+    }
+
+    .agenda-text {
+      min-width: 0;
+      font-family: var(--font-sports);
+      font-size: clamp(15px, 1.32vw, 22px);
+      line-height: 1.04;
+      font-weight: 800;
+      color: #edf8ff;
+      text-transform: uppercase;
+    }
+
+    .geo {
+      width: 16px;
+      height: 16px;
+      border: 1px solid rgba(104, 240, 255, 0.75);
+      transform: rotate(45deg);
+      box-shadow: 0 0 14px rgba(104, 240, 255, 0.5), inset 0 0 10px rgba(104, 240, 255, 0.16);
+    }
+
+    .visual-panel {
+      display: grid;
+      grid-template-columns: 1.16fr 0.84fr;
+      gap: 0;
+      min-height: 0;
+    }
+
+    .showcase {
+      position: relative;
+      min-height: 100%;
+      overflow: hidden;
+      padding: clamp(14px, 1.6vw, 24px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .visual-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      z-index: 4;
+      font-family: var(--font-sports);
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: clamp(11px, 1vw, 14px);
+    }
+
+    .live-draw {
+      color: white;
+      padding: 8px 10px;
+      border-radius: 4px;
+      background: linear-gradient(135deg, rgba(213, 9, 33, 0.95), rgba(255, 75, 42, 0.92));
+      box-shadow: 0 0 24px rgba(255, 49, 83, 0.34);
+    }
+
+    .soon {
+      color: var(--green);
+      text-shadow: 0 0 15px rgba(39, 247, 138, 0.6);
+      animation: pulse 1.8s infinite;
+    }
+
+    .soon.is-live {
+      color: var(--gold);
+      text-shadow: 0 0 18px rgba(245, 199, 101, 0.62);
+    }
+
+    .emblem {
+      position: absolute;
+      left: 50%;
+      top: 52%;
+      width: min(36vh, 330px);
+      aspect-ratio: 1;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, rgba(255, 255, 255, 0.12) 0 6%, transparent 7%),
+        conic-gradient(from 22deg, rgba(245, 199, 101, 0.88), rgba(104, 240, 255, 0.65), rgba(39, 247, 138, 0.65), rgba(245, 199, 101, 0.88));
+      box-shadow: 0 0 60px rgba(245, 199, 101, 0.18), inset 0 0 52px rgba(0, 0, 0, 0.68);
+      opacity: 0.86;
+      animation: emblemRotate 24s linear infinite;
+    }
+
+    .emblem::before,
+    .emblem::after {
+      content: "";
+      position: absolute;
+      inset: 12%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(3, 8, 16, 0.94) 0 49%, transparent 50%),
+        repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.12) 0 8deg, transparent 8deg 18deg);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .emblem::after {
+      inset: 30%;
+      background: linear-gradient(180deg, rgba(245, 199, 101, 0.24), rgba(104, 240, 255, 0.08));
+      box-shadow: inset 0 0 28px rgba(255, 255, 255, 0.14);
+    }
+
+    .player {
+      position: absolute;
+      bottom: 6%;
+      left: 6%;
+      width: min(19vw, 230px);
+      height: min(42vh, 430px);
+      opacity: 0.52;
+      filter: drop-shadow(0 0 24px rgba(26, 124, 255, 0.38));
+      animation: playerDrift 9s ease-in-out infinite alternate;
+    }
+
+    .player::before {
+      content: "";
+      position: absolute;
+      left: 41%;
+      top: 5%;
+      width: 22%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(17, 35, 55, 0.88));
+      box-shadow: 0 0 28px rgba(104, 240, 255, 0.35);
+    }
+
+    .player::after {
+      content: "";
+      position: absolute;
+      inset: 18% 23% 0;
+      background:
+        linear-gradient(105deg, transparent 0 16%, rgba(255, 255, 255, 0.78) 17% 26%, transparent 27%),
+        linear-gradient(180deg, rgba(238, 247, 255, 0.9), rgba(9, 17, 27, 0.86));
+      clip-path: polygon(38% 0, 62% 0, 78% 30%, 66% 54%, 77% 100%, 55% 100%, 49% 63%, 41% 100%, 20% 100%, 33% 54%, 21% 30%);
+    }
+
+    .football {
+      position: absolute;
+      right: 9%;
+      bottom: 18%;
+      width: min(9vw, 110px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 36% 28%, rgba(255, 255, 255, 0.94), rgba(200, 225, 240, 0.72) 38%, rgba(10, 21, 34, 0.96) 72%),
+        conic-gradient(from 0deg, #111, #eee, #111, #eee, #111);
+      box-shadow: 0 0 40px rgba(104, 240, 255, 0.28);
+      animation: ballFloat 4.8s ease-in-out infinite;
+    }
+
+    .draw-machine {
+      position: absolute;
+      left: 52%;
+      bottom: 8%;
+      width: min(23vw, 290px);
+      height: min(28vh, 280px);
+      transform: translateX(-50%);
+      z-index: 2;
+      filter: drop-shadow(0 22px 30px rgba(0, 0, 0, 0.55));
+    }
+
+    .bowl {
+      position: absolute;
+      left: 50%;
+      top: 5%;
+      width: 74%;
+      aspect-ratio: 1.25;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      border: 2px solid rgba(104, 240, 255, 0.33);
+      background: radial-gradient(ellipse at 50% 32%, rgba(255, 255, 255, 0.16), rgba(104, 240, 255, 0.08) 38%, rgba(4, 9, 18, 0.18) 65%, rgba(2, 4, 10, 0.68));
+      box-shadow: inset 0 0 36px rgba(104, 240, 255, 0.24), 0 0 40px rgba(26, 124, 255, 0.2);
+      overflow: hidden;
+    }
+
+    .bowl::before {
+      content: "";
+      position: absolute;
+      inset: 11% 8%;
+      border-radius: 50%;
+      border-top: 3px solid rgba(255, 255, 255, 0.24);
+      filter: blur(1px);
+    }
+
+    .draw-ball {
+      position: absolute;
+      width: 23%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #071225;
+      font-family: var(--font-sports);
+      font-weight: 900;
+      font-size: clamp(13px, 1.4vw, 20px);
+      background: radial-gradient(circle at 32% 28%, white, #ffd76b 42%, #a86b10 82%);
+      box-shadow: 0 0 22px rgba(245, 199, 101, 0.38);
+      animation: ballOrbit 6s ease-in-out infinite;
+    }
+
+    .draw-ball:nth-child(1) { left: 18%; top: 46%; animation-delay: -0.8s; }
+    .draw-ball:nth-child(2) { left: 40%; top: 28%; animation-delay: -2.1s; }
+    .draw-ball:nth-child(3) { left: 58%; top: 51%; animation-delay: -3.2s; }
+    .draw-ball:nth-child(4) { left: 37%; top: 58%; animation-delay: -4.5s; }
+
+    .pedestal {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: 66%;
+      height: 33%;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, rgba(245, 199, 101, 0.55), rgba(22, 35, 54, 0.95));
+      clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%);
+      border-bottom: 4px solid rgba(245, 199, 101, 0.68);
+      box-shadow: inset 0 0 24px rgba(255, 255, 255, 0.1);
+    }
+
+    .trophy {
+      position: absolute;
+      right: 6%;
+      top: 22%;
+      width: min(11vw, 140px);
+      height: min(18vh, 180px);
+      opacity: 0.72;
+      animation: trophyGlow 3.6s ease-in-out infinite alternate;
+    }
+
+    .trophy::before {
+      content: "";
+      position: absolute;
+      left: 24%;
+      top: 0;
+      width: 52%;
+      height: 56%;
+      border-radius: 0 0 45% 45%;
+      background: linear-gradient(120deg, #fff0a7, #d9a63a 45%, #714913);
+      box-shadow: 0 0 35px rgba(245, 199, 101, 0.28);
+    }
+
+    .trophy::after {
+      content: "";
+      position: absolute;
+      left: 34%;
+      top: 54%;
+      width: 32%;
+      height: 42%;
+      background: linear-gradient(180deg, #f5c765, #6c4616);
+      clip-path: polygon(37% 0, 63% 0, 63% 54%, 100% 54%, 100% 100%, 0 100%, 0 54%, 37% 54%);
+    }
+
+    .facts {
+      margin-top: clamp(14px, 1.5vh, 22px);
+      position: relative;
+      z-index: 5;
+      border-top: 1px solid rgba(245, 199, 101, 0.22);
+      padding-top: clamp(14px, 1.8vh, 22px);
+      max-width: 100%;
+    }
+
+    .facts-label {
+      font-family: var(--font-sports);
+      font-size: 11px;
+      color: var(--green);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .fact-text {
+      margin-top: 4px;
+      min-height: clamp(58px, 7vh, 86px);
+      font-family: var(--font-sports);
+      font-size: clamp(28px, 3.15vw, 56px);
+      line-height: 0.96;
+      font-weight: 900;
+      color: white;
+      text-transform: uppercase;
+      text-shadow: 0 0 17px rgba(26, 124, 255, 0.5);
+    }
+
+    .pathway-card {
+      position: relative;
+      z-index: 5;
+      margin-top: auto;
+      border: 1px solid rgba(245, 199, 101, 0.24);
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 28%),
+        linear-gradient(180deg, rgba(3, 10, 22, 0.96), rgba(2, 6, 15, 0.93));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 18px 44px rgba(0, 0, 0, 0.28);
+      padding: clamp(12px, 1.25vw, 18px);
+      overflow: hidden;
+      transition: opacity 0.35s ease, transform 0.35s ease, max-height 0.35s ease, margin 0.35s ease, padding 0.35s ease;
+    }
+
+    .pathway-card.is-hidden {
+      opacity: 0;
+      transform: translateY(8px);
+      max-height: 0;
+      margin-top: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-width: 0;
+      pointer-events: none;
+    }
+
+    .pathway-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(100deg, transparent 20%, rgba(104, 240, 255, 0.13), transparent 42%);
+      transform: translateX(-120%);
+      animation: shine 9s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .pathway-head {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      font-family: var(--font-sports);
+      text-transform: uppercase;
+      font-weight: 900;
+    }
+
+    .pathway-head span:first-child {
+      color: var(--gold);
+      font-size: clamp(18px, 1.6vw, 28px);
+      line-height: 1;
+    }
+
+    .pathway-head span:last-child {
+      color: var(--green);
+      font-size: clamp(10px, 0.85vw, 13px);
+      white-space: nowrap;
+      text-shadow: 0 0 12px rgba(39, 247, 138, 0.46);
+    }
+
+    .pathway-flow {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .pathway-step {
+      position: relative;
+      min-height: clamp(116px, 13vh, 160px);
+      border: 1px solid rgba(104, 240, 255, 0.18);
+      border-radius: 6px;
+      background: linear-gradient(180deg, rgba(7, 24, 45, 0.96), rgba(2, 7, 17, 0.92));
+      padding: 11px;
+      overflow: hidden;
+    }
+
+    .pathway-step::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -8px;
+      width: 16px;
+      height: 2px;
+      background: var(--gold);
+      box-shadow: 0 0 14px rgba(245, 199, 101, 0.6);
+    }
+
+    .pathway-step:last-child::after {
+      display: none;
+    }
+
+    .pathway-step strong {
+      display: block;
+      font-family: var(--font-sports);
+      font-size: clamp(14px, 1.16vw, 20px);
+      line-height: 1;
+      color: #f7fbff;
+      text-transform: uppercase;
+    }
+
+    .pathway-step small {
+      display: block;
+      margin-top: 7px;
+      font-size: clamp(11px, 0.88vw, 14px);
+      line-height: 1.28;
+      color: #d4e4f6;
+    }
+
+    .pathway-step em {
+      display: block;
+      margin-top: 9px;
+      font-style: normal;
+      font-family: var(--font-sports);
+      font-size: clamp(10px, 0.78vw, 12px);
+      line-height: 1.2;
+      color: var(--green);
+      text-transform: uppercase;
+      font-weight: 900;
+      text-shadow: 0 0 10px rgba(39, 247, 138, 0.35);
+    }
+
+    .groups {
+      position: relative;
+      padding: clamp(14px, 1.35vw, 20px);
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(0, 0, 0, 0.16)),
+        radial-gradient(circle at 50% 20%, rgba(245, 199, 101, 0.12), transparent 46%);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      gap: 12px;
+      overflow: auto;
+    }
+
+    .groups .group-card {
+      min-height: 0;
+    }
+
+    .content.agenda-hidden .groups {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      align-content: stretch;
+    }
+
+    .group-card {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      border-radius: 8px;
+      border: 1px solid rgba(245, 199, 101, 0.3);
+      background:
+        linear-gradient(180deg, rgba(4, 10, 20, 0.82), rgba(8, 21, 40, 0.64)),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 30px);
+      box-shadow: inset 0 0 30px rgba(245, 199, 101, 0.06), 0 0 36px rgba(104, 240, 255, 0.08);
+      padding: clamp(12px, 1.3vw, 20px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .group-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(110deg, transparent 0 36%, rgba(245, 199, 101, 0.11) 47%, transparent 59%);
+      transform: translateX(-110%);
+      animation: shine 7.5s ease-in-out infinite;
+    }
+
+    .group-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 11px;
+    }
+
+    .group-letter {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      font-family: var(--font-display);
+      font-size: clamp(34px, 4vw, 66px);
+      line-height: 0.9;
+      color: transparent;
+      background: linear-gradient(180deg, #fff3bd, #c58529 68%, #6b4615);
+      -webkit-background-clip: text;
+      background-clip: text;
+      filter: drop-shadow(0 0 16px rgba(245, 199, 101, 0.3));
+    }
+
+    .group-letter small {
+      font-family: var(--font-sports);
+      font-size: clamp(13px, 1.1vw, 18px);
+      color: #cbd8e9;
+      -webkit-text-fill-color: #cbd8e9;
+      text-transform: uppercase;
+    }
+
+    .group-meta {
+      font-family: var(--font-sports);
+      font-size: clamp(11px, 1vw, 14px);
+      color: var(--green);
+      text-transform: uppercase;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .slots {
+      display: grid;
+      gap: clamp(8px, 1vh, 12px);
+      flex: 1;
+      min-height: 0;
+    }
+
+    .slot {
+      position: relative;
+      display: grid;
+      grid-template-columns: 42px 1fr 26px;
+      align-items: center;
+      min-height: 0;
+      border: 1px solid rgba(104, 240, 255, 0.18);
+      border-radius: 5px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.018));
+      overflow: hidden;
+    }
+
+    .slot::before {
+      content: "";
+      position: absolute;
+      left: 48px;
+      right: 58px;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(245, 199, 101, 0.4), transparent);
+      opacity: 0.32;
+      animation: placeholderPulse 2.4s ease-in-out infinite;
+    }
+
+    .slot-num {
+      height: 100%;
+      display: grid;
+      place-items: center;
+      color: var(--gold);
+      font-family: var(--font-sports);
+      font-weight: 900;
+      font-size: clamp(13px, 1vw, 16px);
+      background: rgba(245, 199, 101, 0.08);
+      border-right: 1px solid rgba(245, 199, 101, 0.14);
+    }
+
+    .slot-name {
+      min-width: 0;
+      min-height: 26px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      font-family: var(--font-sports);
+      font-size: clamp(15px, 1.2vw, 20px);
+      line-height: 1;
+      font-weight: 900;
+      color: #f4fbff;
+      text-transform: uppercase;
+      outline: none;
+      text-shadow: 0 0 14px rgba(104, 240, 255, 0.28);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      position: relative;
+      z-index: 2;
+    }
+
+    .slot-name:focus {
+      background: rgba(104, 240, 255, 0.08);
+      box-shadow: inset 0 0 0 1px rgba(104, 240, 255, 0.28);
+    }
+
+    .slot-mark {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1px solid rgba(39, 247, 138, 0.7);
+      box-shadow: 0 0 12px rgba(39, 247, 138, 0.36);
+    }
+
+    .pathway-overlay {
+      position: absolute;
+      inset: calc(var(--safe-y) + 76px) var(--safe-x) calc(var(--safe-y) + 58px);
+      z-index: 16;
+      opacity: 0;
+      transform: translateY(18px) scale(0.985);
+      pointer-events: none;
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    .pathway-overlay.is-visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .playoff-board {
+      height: 100%;
+      border: 1px solid rgba(104, 240, 255, 0.2);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 88% 26%, rgba(26, 124, 255, 0.12), transparent 32%),
+        linear-gradient(180deg, rgba(3, 8, 18, 0.97), rgba(4, 12, 25, 0.94)),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 38px);
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.58), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      padding: clamp(20px, 2vw, 34px);
+      overflow: hidden;
+      backdrop-filter: blur(18px);
+    }
+
+    .playoff-title {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+      padding-bottom: 9px;
+      margin-bottom: clamp(14px, 1.8vh, 22px);
+    }
+
+    .playoff-title strong {
+      font-family: var(--font-sports);
+      color: #eef7ff;
+      font-size: clamp(31px, 2.9vw, 56px);
+      line-height: 1;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .playoff-title span {
+      color: #9eb0c7;
+      font-size: clamp(16px, 1.3vw, 23px);
+      font-style: italic;
+    }
+
+    .playoff-title em {
+      color: var(--green);
+      font: normal 900 clamp(15px, 1.12vw, 20px) var(--font-sports);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .bracket-map {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.05fr 1.08fr 1.08fr 1.02fr;
+      gap: clamp(18px, 2.5vw, 46px);
+      align-items: start;
+    }
+
+    .bracket-map::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 23%, rgba(245, 199, 101, 0.42) 23% 24%, transparent 24%),
+        linear-gradient(90deg, transparent 50%, rgba(104, 240, 255, 0.34) 50% 51%, transparent 51%),
+        linear-gradient(90deg, transparent 76%, rgba(245, 199, 101, 0.42) 76% 77%, transparent 77%);
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .bracket-column {
+      position: relative;
+      z-index: 2;
+      min-width: 0;
+    }
+
+    .column-title {
+      margin-bottom: 10px;
+      padding-bottom: 7px;
+      border-bottom: 1px solid rgba(198, 158, 87, 0.18);
+      color: #caa96a;
+      font: 900 clamp(18px, 1.48vw, 27px) var(--font-sports);
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      text-shadow: 0 0 8px rgba(198, 158, 87, 0.18);
+    }
+
+    .bracket-card {
+      position: relative;
+      border: 1px solid rgba(104, 240, 255, 0.17);
+      border-radius: 6px;
+      background: linear-gradient(180deg, rgba(8, 25, 47, 0.9), rgba(3, 10, 22, 0.86));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 16px 32px rgba(0, 0, 0, 0.24);
+      padding: clamp(12px, 1.1vw, 18px);
+      margin-bottom: 12px;
+      min-height: 82px;
+    }
+
+    .bracket-card.gold {
+      border-color: rgba(198, 158, 87, 0.3);
+      box-shadow: inset 0 0 24px rgba(198, 158, 87, 0.04), 0 0 20px rgba(198, 158, 87, 0.05);
+    }
+
+    .bracket-card.redline {
+      border-color: rgba(255, 49, 83, 0.32);
+    }
+
+    .seed-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 36px;
+      color: #eaf7ff;
+      font: 900 clamp(18px, 1.35vw, 25px) var(--font-sports);
+      text-transform: uppercase;
+    }
+
+    .seed-rank {
+      color: #caa96a;
+      font-size: 0.85em;
+      min-width: 34px;
+    }
+
+    .seed-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tag {
+      border-radius: 4px;
+      padding: 5px 8px;
+      background: rgba(26, 124, 255, 0.18);
+      border: 1px solid rgba(26, 124, 255, 0.38);
+      color: #7fbdff;
+      font-size: clamp(14px, 0.9vw, 16px);
+      line-height: 1;
+    }
+
+    .tag.auto,
+    .tag.seeded {
+      background: rgba(39, 247, 138, 0.12);
+      border-color: rgba(39, 247, 138, 0.4);
+      color: var(--green);
+    }
+
+    .match-label {
+      color: #caa96a;
+      font: 900 clamp(16px, 1.17vw, 22px) var(--font-sports);
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 5px;
+    }
+
+    .match-vs {
+      color: #7f91aa;
+      font-size: clamp(14px, 0.9vw, 18px);
+      text-align: center;
+      text-transform: uppercase;
+      margin: 4px 0;
+    }
+
+    .connector::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: calc(-1 * clamp(18px, 2.5vw, 46px));
+      width: clamp(18px, 2.5vw, 46px);
+      border-top: 1px solid rgba(198, 158, 87, 0.44);
+      box-shadow: 0 0 10px rgba(198, 158, 87, 0.15);
+    }
+
+    .connector.blue::after {
+      border-color: rgba(104, 240, 255, 0.58);
+      box-shadow: 0 0 12px rgba(104, 240, 255, 0.24);
+    }
+
+    .stack-gap {
+      margin-top: clamp(20px, 3.2vh, 44px);
+    }
+
+    .eliminated {
+      margin-top: clamp(16px, 2vh, 26px);
+      border-top: 1px solid rgba(255, 49, 83, 0.34);
+      padding-top: 12px;
+      color: #ff5d77;
+      font: 900 clamp(19px, 1.48vw, 27px) var(--font-sports);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+
+    .eliminated span {
+      display: inline-flex;
+      margin: 9px 8px 0 0;
+      border: 1px solid rgba(255, 49, 83, 0.22);
+      border-radius: 5px;
+      padding: 8px 12px;
+      color: #8d9bb1;
+      background: rgba(255, 49, 83, 0.05);
+      letter-spacing: 0;
+    }
+
+    .fixture-section {
+      display: none;
+    }
+
+    .intro {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      padding: var(--safe-y) var(--safe-x);
+      background:
+        radial-gradient(circle at 50% 42%, rgba(26, 124, 255, 0.2), transparent 34%),
+        radial-gradient(circle at 50% 58%, rgba(245, 199, 101, 0.12), transparent 42%),
+        rgba(2, 4, 10, 0.86);
+      transition: opacity 1s ease, visibility 1s ease;
+    }
+
+    .intro.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .intro-card {
+      text-align: center;
+      transform: scale(0.92);
+      animation: introZoom 9s ease-in-out infinite alternate;
+    }
+
+    .logo-mark {
+      position: relative;
+      width: min(34vw, 380px);
+      aspect-ratio: 1;
+      margin: 0 auto 18px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle, rgba(2, 4, 10, 0.92) 0 46%, transparent 47%),
+        conic-gradient(from 0deg, var(--gold), var(--cyan), var(--green), var(--gold));
+      box-shadow: 0 0 90px rgba(245, 199, 101, 0.22), inset 0 0 40px rgba(255, 255, 255, 0.1);
+      animation: logoReveal 1.4s cubic-bezier(.2,.8,.18,1) both, logoSpin 30s linear infinite;
+    }
+
+    .logo-mark::before {
+      content: "JCL26";
+      position: absolute;
+      font-family: var(--font-display);
+      font-size: clamp(42px, 6vw, 86px);
+      color: transparent;
+      background: linear-gradient(180deg, #fff6c8, #daa23b 58%, #6e4714);
+      -webkit-background-clip: text;
+      background-clip: text;
+      filter: drop-shadow(0 0 16px rgba(245, 199, 101, 0.45));
+      animation: counterSpin 30s linear infinite;
+    }
+
+    .intro h3 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(34px, 5vw, 92px);
+      line-height: 0.94;
+      color: white;
+      text-transform: uppercase;
+      text-shadow: 0 0 26px rgba(26, 124, 255, 0.54);
+    }
+
+    .streaming {
+      margin-top: 12px;
+      font-family: var(--font-sports);
+      font-size: clamp(18px, 2vw, 34px);
+      color: var(--green);
+      text-transform: uppercase;
+      font-weight: 900;
+      text-shadow: 0 0 22px rgba(39, 247, 138, 0.55);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    .countdown {
+      margin: clamp(18px, 3vh, 34px) auto 0;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(76px, 136px));
+      gap: clamp(10px, 1.3vw, 18px);
+      justify-content: center;
+    }
+
+    .time-box {
+      border: 1px solid rgba(104, 240, 255, 0.28);
+      border-radius: 7px;
+      background: linear-gradient(180deg, rgba(12, 31, 58, 0.78), rgba(2, 4, 10, 0.78));
+      padding: clamp(10px, 1.2vw, 17px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 0 26px rgba(26, 124, 255, 0.18);
+    }
+
+    .time-value {
+      font-family: var(--font-display);
+      font-size: clamp(34px, 4.2vw, 76px);
+      line-height: 0.9;
+      color: var(--gold);
+      text-shadow: 0 0 20px rgba(245, 199, 101, 0.48);
+    }
+
+    .time-label {
+      margin-top: 6px;
+      font-family: var(--font-sports);
+      font-size: clamp(10px, 0.9vw, 14px);
+      color: #c4d5e9;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .intro-actions {
+      margin-top: 18px;
+      color: rgba(219, 238, 255, 0.68);
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .ticker {
+      position: absolute;
+      left: var(--safe-x);
+      right: var(--safe-x);
+      bottom: var(--safe-y);
+      z-index: 18;
+      height: 42px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      border: 1px solid rgba(245, 199, 101, 0.28);
+      border-radius: 6px;
+      overflow: hidden;
+      background: linear-gradient(90deg, rgba(2, 4, 10, 0.94), rgba(8, 23, 44, 0.88));
+      box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    }
+
+    .operator {
+      position: absolute;
+      left: var(--safe-x);
+      bottom: calc(var(--safe-y) + 54px);
+      z-index: 50;
+      width: min(920px, calc(100vw - 2 * var(--safe-x)));
+      max-height: min(78vh, 760px);
+      border: 1px solid rgba(104, 240, 255, 0.28);
+      border-radius: 8px;
+      background: rgba(2, 7, 17, 0.94);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(18px);
+      padding: 14px;
+      overflow: auto;
+      transform: translateY(16px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .operator.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .operator-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-family: var(--font-sports);
+      text-transform: uppercase;
+      font-weight: 900;
+      color: var(--gold);
+    }
+
+    .operator-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .operator label {
+      display: grid;
+      gap: 5px;
+      color: #9eb0c7;
+      font: 900 11px var(--font-sports);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .operator input,
+    .operator textarea,
+    .operator select {
+      width: 100%;
+      border: 1px solid rgba(104, 240, 255, 0.24);
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.06);
+      color: white;
+      padding: 9px 10px;
+      font: 800 14px var(--font-sports);
+      text-transform: uppercase;
+      outline: none;
+    }
+
+    .operator textarea {
+      min-height: 104px;
+      resize: vertical;
+      line-height: 1.3;
+    }
+
+    .operator input:focus,
+    .operator textarea:focus,
+    .operator select:focus {
+      border-color: rgba(245, 199, 101, 0.65);
+      box-shadow: 0 0 18px rgba(245, 199, 101, 0.16);
+    }
+
+    .operator-wide {
+      grid-column: span 2;
+    }
+
+    .operator-full {
+      grid-column: 1 / -1;
+    }
+
+    #slotInputGrid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      padding-top: 4px;
+    }
+
+    .operator-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .operator button {
+      border: 1px solid rgba(245, 199, 101, 0.36);
+      border-radius: 5px;
+      background: linear-gradient(180deg, rgba(245, 199, 101, 0.18), rgba(245, 199, 101, 0.07));
+      color: var(--gold);
+      padding: 8px 10px;
+      font: 900 12px var(--font-sports);
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .ticker-label {
+      display: grid;
+      place-items: center;
+      padding: 0 16px;
+      min-width: 160px;
+      background: linear-gradient(135deg, #c78928, #f5c765 48%, #765117);
+      color: #06101f;
+      font-family: var(--font-sports);
+      font-weight: 900;
+      font-size: clamp(12px, 1vw, 15px);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .ticker-track {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      mask-image: linear-gradient(90deg, transparent, black 5%, black 95%, transparent);
+    }
+
+    .ticker-content {
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+      animation: ticker 32s linear infinite;
+      font-family: var(--font-sports);
+      font-size: clamp(14px, 1.35vw, 22px);
+      font-weight: 900;
+      text-transform: uppercase;
+      color: #eef7ff;
+    }
+
+    .sep {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 14px rgba(39, 247, 138, 0.78);
+      margin: 0 24px;
+      flex: 0 0 auto;
+    }
+
+    .flash {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      pointer-events: none;
+      background: white;
+      opacity: 0;
+    }
+
+    .flash.fire {
+      animation: flash 0.75s ease-out;
+    }
+
+    @keyframes gridDrift {
+      to { transform: perspective(900px) rotateX(63deg) translateY(23%); }
+    }
+
+    @keyframes beamSweep {
+      from { opacity: 0.18; translate: -4vw 0; }
+      to { opacity: 0.42; translate: 4vw 0; }
+    }
+
+    @keyframes fogMove {
+      from { transform: translateX(-3%) scale(1); }
+      to { transform: translateX(4%) scale(1.08); }
+    }
+
+    @keyframes particles {
+      to { background-position: 130px -260px, -180px -300px, 240px -420px; }
+    }
+
+    @keyframes shine {
+      0%, 45% { transform: translateX(-130%); }
+      62%, 100% { transform: translateX(130%); }
+    }
+
+    @keyframes titleSweep {
+      0%, 44% { left: -22%; }
+      62%, 100% { left: 110%; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.48; transform: scale(0.88); }
+    }
+
+    @keyframes agendaIn {
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes sideGlow {
+      0%, 100% { opacity: 0.58; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes emblemRotate {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    @keyframes counterSpin {
+      to { transform: rotate(-360deg); }
+    }
+
+    @keyframes playerDrift {
+      to { transform: translateX(16px) translateY(-8px); opacity: 0.65; }
+    }
+
+    @keyframes ballFloat {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-22px) rotate(18deg); }
+    }
+
+    @keyframes ballOrbit {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(14px, -12px) scale(1.05); }
+    }
+
+    @keyframes trophyGlow {
+      to { opacity: 0.9; filter: drop-shadow(0 0 26px rgba(245, 199, 101, 0.42)); }
+    }
+
+    @keyframes placeholderPulse {
+      0%, 100% { opacity: 0.22; transform: scaleX(0.9); }
+      50% { opacity: 0.54; transform: scaleX(1); }
+    }
+
+    @keyframes introZoom {
+      to { transform: scale(1); }
+    }
+
+    @keyframes logoReveal {
+      from { opacity: 0; filter: blur(18px); }
+      to { opacity: 1; filter: blur(0); }
+    }
+
+    @keyframes logoSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes ticker {
+      to { transform: translateX(-50%); }
+    }
+
+    @keyframes flash {
+      0% { opacity: 0; }
+      18% { opacity: 0.88; }
+      100% { opacity: 0; }
+    }
+
+    @media (max-width: 1100px) {
+      .safe {
+        inset: 18px 18px 78px;
+      }
+
+      .content {
+        grid-template-columns: 1fr;
+        overflow: auto;
+        padding-bottom: 10px;
+      }
+
+      .content.agenda-hidden .visual-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .visual-panel {
+        min-height: 560px;
+      }
+
+      .ticker {
+        left: 18px;
+        right: 18px;
+        bottom: 18px;
+      }
+
+      .top-bar {
+        grid-template-columns: auto 1fr auto;
+      }
+
+      .studio {
+        display: none;
+      }
+    }
+
+    @media (max-width: 720px) {
+      html,
+      body {
+        overflow: auto;
+      }
+
+      .stage {
+        min-height: 1120px;
+        overflow: hidden;
+      }
+
+      .top-bar {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .location,
+      .on-air {
+        justify-content: center;
+      }
+
+      .content,
+      .visual-panel {
+        display: block;
+      }
+
+      .content.agenda-hidden .groups {
+        display: block;
+      }
+
+      .showcase,
+      .groups {
+        min-height: 520px;
+      }
+
+      .groups {
+        border-left: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .countdown {
+        grid-template-columns: repeat(2, minmax(112px, 1fr));
+      }
+
+      .ticker {
+        grid-template-columns: 116px 1fr;
+      }
+
+      .ticker-label {
+        min-width: 116px;
+        padding: 0 8px;
+      }
+
+      .fixture-section {
+        display: none;
+      }
+
+      .operator-grid {
+        grid-template-columns: 1fr;
+      }
+
+      #slotInputGrid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage" aria-label="JCL26 Official Draw broadcast experience">
+    <div class="stadium" aria-hidden="true">
+      <div class="beam"></div>
+      <div class="beam"></div>
+      <div class="beam"></div>
+      <div class="beam"></div>
+      <div class="stadium__ring"></div>
+    </div>
+    <div class="fog" aria-hidden="true"></div>
+    <div class="particles" aria-hidden="true"></div>
+
+    <section class="intro" id="introScene" aria-label="Cinematic intro">
+      <div class="intro-card">
+        <div class="logo-mark" aria-hidden="true"></div>
+        <h3 id="introTitle">JCL26 Official Draw</h3>
+        <div class="streaming">Streaming Will Begin Shortly</div>
+        <div class="countdown" aria-label="Countdown to Thursday May 21st 2026 at 8:00 PM ET">
+          <div class="time-box">
+            <div class="time-value" id="days">00</div>
+            <div class="time-label">Days</div>
+          </div>
+          <div class="time-box">
+            <div class="time-value" id="hours">00</div>
+            <div class="time-label">Hours</div>
+          </div>
+          <div class="time-box">
+            <div class="time-value" id="minutes">00</div>
+            <div class="time-label">Minutes</div>
+          </div>
+          <div class="time-box">
+            <div class="time-value" id="seconds">00</div>
+            <div class="time-label">Seconds</div>
+          </div>
+        </div>
+        <div class="intro-actions">1 operator • 2 pathway card • 3 full pathway • 4 intro</div>
+      </div>
+    </section>
+
+    <div class="safe">
+      <header class="top-bar" aria-label="Broadcast information bar">
+        <div class="live-pill"><span class="pulse-dot"></span>LIVE</div>
+        <div class="location" id="locationDisplay">Baltimore, Maryland</div>
+        <div class="studio">JCL26 Studios</div>
+        <div class="on-air"><span class="signal"></span>ON AIR</div>
+      </header>
+
+      <section class="hero" aria-label="Event title">
+        <div class="kicker">Official Tournament Ceremony</div>
+        <h1 id="tournamentTitle">Jesus Champions League 2026</h1>
+        <h2>Official Draw</h2>
+        <div class="date-line">Thursday May 21st, 2026 — 8:00 PM ET</div>
+      </section>
+
+      <section class="content" id="mainContent">
+        <aside class="panel agenda-panel" aria-label="Tonight's agenda">
+          <div class="panel-title">
+            <span>Tonight’s Agenda</span>
+            <span class="panel-chip">Ceremony Run</span>
+          </div>
+          <div class="agenda-list">
+            <div class="agenda-item"><div class="number">01</div><div class="agenda-text">Opening Prayer</div><div class="geo"></div></div>
+            <div class="agenda-item"><div class="number">02</div><div class="agenda-text">Tournament Overview & Format</div><div class="geo"></div></div>
+            <div class="agenda-item"><div class="number">03</div><div class="agenda-text">Official Group Stage Draw</div><div class="geo"></div></div>
+            <div class="agenda-item"><div class="number">04</div><div class="agenda-text">Match Scheduling</div><div class="geo"></div></div>
+            <div class="agenda-item"><div class="number">05</div><div class="agenda-text">Roster Size & Team Management</div><div class="geo"></div></div>
+            <div class="agenda-item"><div class="number">06</div><div class="agenda-text">Media & Promotion</div><div class="geo"></div></div>
+            <div class="agenda-item"><div class="number">07</div><div class="agenda-text">A.O.B</div><div class="geo"></div></div>
+            <div class="agenda-item"><div class="number">08</div><div class="agenda-text">Closing Prayer</div><div class="geo"></div></div>
+          </div>
+        </aside>
+
+        <section class="panel visual-panel" aria-label="Tournament visuals and group draw">
+          <div class="showcase">
+            <div class="visual-status">
+              <div class="live-draw">Live Draw</div>
+              <div class="soon" id="drawStatus">Awaiting Draw</div>
+            </div>
+            <div class="emblem" aria-hidden="true"></div>
+            <div class="player" aria-hidden="true"></div>
+            <div class="football" aria-hidden="true"></div>
+            <div class="trophy" aria-hidden="true"></div>
+            <div class="draw-machine" aria-label="Animated transparent draw bowl">
+              <div class="bowl">
+                <div class="draw-ball">1</div>
+                <div class="draw-ball">2</div>
+                <div class="draw-ball">3</div>
+                <div class="draw-ball">4</div>
+              </div>
+              <div class="pedestal"></div>
+            </div>
+            <section class="pathway-card" id="pathwayCard" aria-label="Competition pathway">
+              <div class="pathway-head">
+                <span>Competition Pathway</span>
+                <span>League Phase to Final</span>
+              </div>
+              <div class="pathway-flow">
+                <div class="pathway-step">
+                  <strong>League Phase</strong>
+                  <small>Four match rounds for every team across the opening table.</small>
+                  <em>Rounds 1-4</em>
+                </div>
+                <div class="pathway-step">
+                  <strong>Play-In</strong>
+                  <small>Middle qualifiers battle for the remaining semi-final places.</small>
+                  <em>Knockout entry</em>
+                </div>
+                <div class="pathway-step">
+                  <strong>Semi-Finals</strong>
+                  <small>Top contenders meet under knockout rules in the final four.</small>
+                  <em>Final four</em>
+                </div>
+                <div class="pathway-step">
+                  <strong>3rd Place</strong>
+                  <small>The final podium place is decided on closing day.</small>
+                  <em>Bronze match</em>
+                </div>
+                <div class="pathway-step">
+                  <strong>Grand Final</strong>
+                  <small>The championship match crowns the Jesus Champions League winner.</small>
+                  <em>Title match</em>
+                </div>
+              </div>
+            </section>
+            <div class="facts">
+              <div class="facts-label">Did You Know</div>
+              <div class="fact-text" id="factText">8 teams. One champion.</div>
+            </div>
+          </div>
+
+          <div class="groups" id="groupsContainer" aria-label="Group draw placeholder">
+          </div>
+        </section>
+      </section>
+    </div>
+
+    <section class="operator" id="operatorPanel" aria-label="Live group slot controls">
+      <div class="operator-head">
+        <span>Broadcast Operator Controls</span>
+        <span>Press O to hide</span>
+      </div>
+      <div class="operator-grid">
+        <label class="operator-wide">Tournament Name
+          <input id="operatorTournament" value="Jesus Champions League 2026" />
+        </label>
+        <label>City
+          <input id="operatorCity" value="Baltimore" />
+        </label>
+        <label>State
+          <input id="operatorState" value="Maryland" />
+        </label>
+        <label>Groups
+          <input id="operatorGroupCount" type="number" min="1" max="8" value="1" />
+        </label>
+        <label>Teams Per Group
+          <input id="operatorTeamsPerGroup" type="number" min="1" max="12" value="8" />
+        </label>
+        <label>Agenda
+          <select id="operatorAgenda">
+            <option value="on" selected>Enabled</option>
+            <option value="off">Disabled</option>
+          </select>
+        </label>
+        <label class="operator-full">Ticker Teams
+          <textarea id="operatorTickerTeams">Higher Ground Assembly
+Christ Villa
+New Wine Assembly
+Jesus House Elkridge
+NCCC FC
+Jesus House FC
+Victory Temple Bowie
+Calvary Chapel</textarea>
+        </label>
+        <label class="operator-full">Pathway Card Steps
+          <textarea id="operatorPathwaySteps">League Phase | Four match rounds for every team across the opening table. | Rounds 1-4
+Play-In | Middle qualifiers battle for the remaining semi-final places. | Knockout entry
+Semi-Finals | Top contenders meet under knockout rules in the final four. | Final four
+3rd Place | The final podium place is decided on closing day. | Bronze match
+Grand Final | The championship match crowns the Jesus Champions League winner. | Title match</textarea>
+        </label>
+        <label class="operator-full">Did You Know Facts
+          <textarea id="operatorFacts">8 teams. One champion.
+Every team plays 4 league matches.
+Top 2 advance directly to semi-finals.
+Bottom 2 are eliminated.
+22 total tournament matches.</textarea>
+        </label>
+        <div class="operator-full" id="slotInputGrid"></div>
+      </div>
+      <div class="operator-actions">
+        <button type="button" id="statusButton">Start Draw</button>
+        <button type="button" id="applySettingsButton">Apply Settings</button>
+        <button type="button" id="clearButton">Clear Slots</button>
+      </div>
+    </section>
+
+    <section class="panel fixture-section" id="fixtureSection" aria-label="League phase fixture visualization">
+      <div class="panel-title" style="padding:14px 14px 0;margin:0;">
+        <span>Competition Pathway</span>
+        <span class="panel-chip">Secondary Graphic</span>
+      </div>
+      <div class="fixture-grid">
+        <div class="fixture-step">
+          <div class="step-title">League Phase</div>
+          <div class="step-copy">Round 1 • Round 2 • Round 3 • Round 4 across the opening stage.</div>
+        </div>
+        <div class="fixture-step">
+          <div class="step-title">Play-In Round</div>
+          <div class="step-copy">Middle qualifiers battle for semi-final entry.</div>
+        </div>
+        <div class="fixture-step">
+          <div class="step-title">Semi-Finals</div>
+          <div class="step-copy">Top contenders meet under knockout rules.</div>
+        </div>
+        <div class="fixture-step">
+          <div class="step-title">3rd Place Match</div>
+          <div class="step-copy">Final podium place decided on closing day.</div>
+        </div>
+        <div class="fixture-step">
+          <div class="step-title">Grand Final</div>
+          <div class="step-copy">Championship match to crown JCL26 winner.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pathway-overlay" id="pathwayOverlay" aria-label="Full competition pathway visualization">
+      <div class="playoff-board">
+        <div class="playoff-title">
+          <div>
+            <strong>Playoff Bracket</strong>
+            <span>Bottom 2 teams eliminated after league phase. Top 2 seeded automatically. Teams 3-6 enter play-in.</span>
+          </div>
+        </div>
+        <div class="bracket-map">
+          <div class="bracket-column">
+            <div class="column-title">League Standings</div>
+            <div class="bracket-card gold connector">
+              <div class="match-label">1st Seed - Auto Qualified</div>
+              <div class="seed-row"><span class="seed-rank">1</span><span class="seed-name">1st Place</span><span class="tag auto">Auto</span></div>
+            </div>
+            <div class="bracket-card connector">
+              <div class="match-label">2nd Seed - Auto Qualified</div>
+              <div class="seed-row"><span class="seed-rank">2</span><span class="seed-name">2nd Place</span><span class="tag auto">Auto</span></div>
+            </div>
+            <div class="bracket-card">
+              <div class="match-label">Play-In Participants</div>
+              <div class="seed-row"><span class="seed-rank">3</span><span class="seed-name">3rd Place</span><span class="tag">Play-In B</span></div>
+              <div class="seed-row"><span class="seed-rank">4</span><span class="seed-name">4th Place</span><span class="tag">Play-In A</span></div>
+              <div class="seed-row"><span class="seed-rank">5</span><span class="seed-name">5th Place</span><span class="tag">Play-In A</span></div>
+              <div class="seed-row"><span class="seed-rank">6</span><span class="seed-name">6th Place</span><span class="tag">Play-In B</span></div>
+            </div>
+          </div>
+
+          <div class="bracket-column">
+            <div class="column-title">Play-In Round</div>
+            <div class="bracket-card connector blue">
+              <div class="match-label">Play-In A</div>
+              <div class="seed-row"><span class="seed-rank">4</span><span class="seed-name">4th Place</span><span class="tag">Play-In</span></div>
+              <div class="match-vs">vs</div>
+              <div class="seed-row"><span class="seed-rank">5</span><span class="seed-name">5th Place</span><span class="tag">Play-In</span></div>
+            </div>
+            <div class="bracket-card connector blue stack-gap">
+              <div class="match-label">Play-In B</div>
+              <div class="seed-row"><span class="seed-rank">3</span><span class="seed-name">3rd Place</span><span class="tag">Play-In</span></div>
+              <div class="match-vs">vs</div>
+              <div class="seed-row"><span class="seed-rank">6</span><span class="seed-name">6th Place</span><span class="tag">Play-In</span></div>
+            </div>
+          </div>
+
+          <div class="bracket-column">
+            <div class="column-title">Semi-Finals</div>
+            <div class="bracket-card gold connector">
+              <div class="match-label">Semi-Final 1</div>
+              <div class="seed-row"><span class="seed-rank">1</span><span class="seed-name">1st Seed</span><span class="tag seeded">Seeded</span></div>
+              <div class="match-vs">vs</div>
+              <div class="seed-row"><span class="seed-rank">W</span><span class="seed-name">Play-In A Winner</span><span class="tag">Play-In</span></div>
+            </div>
+            <div class="bracket-card connector stack-gap">
+              <div class="match-label">Semi-Final 2</div>
+              <div class="seed-row"><span class="seed-rank">2</span><span class="seed-name">2nd Seed</span><span class="tag seeded">Seeded</span></div>
+              <div class="match-vs">vs</div>
+              <div class="seed-row"><span class="seed-rank">W</span><span class="seed-name">Play-In B Winner</span><span class="tag">Play-In</span></div>
+            </div>
+          </div>
+
+          <div class="bracket-column">
+            <div class="column-title">Final & 3rd Place</div>
+            <div class="bracket-card redline">
+              <div class="match-label">3rd Place Match</div>
+              <div class="seed-row"><span class="seed-rank">L</span><span class="seed-name">SF1 Loser</span><span class="tag">Podium</span></div>
+              <div class="match-vs">vs</div>
+              <div class="seed-row"><span class="seed-rank">L</span><span class="seed-name">SF2 Loser</span><span class="tag">Podium</span></div>
+            </div>
+            <div class="bracket-card gold stack-gap">
+              <div class="match-label">Grand Final</div>
+              <div class="seed-row"><span class="seed-rank">W</span><span class="seed-name">SF1 Winner</span><span class="tag seeded">Finalist</span></div>
+              <div class="match-vs">vs</div>
+              <div class="seed-row"><span class="seed-rank">W</span><span class="seed-name">SF2 Winner</span><span class="tag seeded">Finalist</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="eliminated">Eliminated After League Phase - Bottom 2 <span>7th Place</span><span>8th Place</span></div>
+      </div>
+    </section>
+
+    <footer class="ticker" aria-label="Welcome teams ticker">
+      <div class="ticker-label">Welcome Teams</div>
+      <div class="ticker-track">
+        <div class="ticker-content" id="tickerContent">
+          <span>Higher Ground Assembly</span><span class="sep"></span>
+          <span>Christ Villa</span><span class="sep"></span>
+          <span>New Wine Assembly</span><span class="sep"></span>
+          <span>Jesus House Elkridge</span><span class="sep"></span>
+          <span>NCCC FC</span><span class="sep"></span>
+          <span>Jesus House FC</span><span class="sep"></span>
+          <span>Victory Temple Bowie</span><span class="sep"></span>
+          <span>Calvary Chapel</span><span class="sep"></span>
+        </div>
+      </div>
+    </footer>
+
+    <div class="flash" id="flash"></div>
+  </main>
+
+  <script>
+    const targetDate = new Date("2026-05-21T20:00:00-04:00");
+    const countdown = {
+      days: document.getElementById("days"),
+      hours: document.getElementById("hours"),
+      minutes: document.getElementById("minutes"),
+      seconds: document.getElementById("seconds")
+    };
+
+    function pad(value) {
+      return String(value).padStart(2, "0");
+    }
+
+    function updateCountdown() {
+      const now = new Date();
+      const distance = Math.max(0, targetDate.getTime() - now.getTime());
+      const totalSeconds = Math.floor(distance / 1000);
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      countdown.days.textContent = pad(days);
+      countdown.hours.textContent = pad(hours);
+      countdown.minutes.textContent = pad(minutes);
+      countdown.seconds.textContent = pad(seconds);
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    let facts = [
+      "8 teams. One champion.",
+      "Every team plays 4 league matches.",
+      "Top 2 advance directly to semi-finals.",
+      "Bottom 2 are eliminated.",
+      "22 total tournament matches."
+    ];
+    const factText = document.getElementById("factText");
+    let factIndex = 0;
+
+    setInterval(() => {
+      factIndex = (factIndex + 1) % facts.length;
+      factText.animate(
+        [
+          { opacity: 1, transform: "translateY(0)" },
+          { opacity: 0, transform: "translateY(10px)" }
+        ],
+        { duration: 260, easing: "ease-in", fill: "forwards" }
+      ).onfinish = () => {
+        factText.textContent = facts[factIndex];
+        factText.animate(
+          [
+            { opacity: 0, transform: "translateY(-8px)" },
+            { opacity: 1, transform: "translateY(0)" }
+          ],
+          { duration: 420, easing: "cubic-bezier(.2,.8,.2,1)", fill: "forwards" }
+        );
+      };
+    }, 4500);
+
+    const intro = document.getElementById("introScene");
+    const flash = document.getElementById("flash");
+    const fixtureSection = document.getElementById("fixtureSection");
+    const pathwayCard = document.getElementById("pathwayCard");
+    const pathwayOverlay = document.getElementById("pathwayOverlay");
+    const ticker = document.getElementById("tickerContent");
+    const introTitle = document.getElementById("introTitle");
+    const locationDisplay = document.getElementById("locationDisplay");
+    const tournamentTitle = document.getElementById("tournamentTitle");
+    const mainContent = document.getElementById("mainContent");
+    const groupsContainer = document.getElementById("groupsContainer");
+
+    function enterBroadcast() {
+      flash.classList.remove("fire");
+      void flash.offsetWidth;
+      flash.classList.add("fire");
+      intro.classList.add("is-hidden");
+    }
+
+    setTimeout(enterBroadcast, 7200);
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "2") {
+        togglePathway();
+      }
+
+      if (event.key === "3") {
+        togglePathwayOverlay();
+      }
+
+      if (event.key === "4") {
+        intro.classList.toggle("is-hidden");
+      }
+
+      if (event.key === "1") {
+        toggleOperatorPanel();
+      }
+    });
+
+    const operatorPanel = document.getElementById("operatorPanel");
+    const operatorTournament = document.getElementById("operatorTournament");
+    const operatorCity = document.getElementById("operatorCity");
+    const operatorState = document.getElementById("operatorState");
+    const operatorGroupCount = document.getElementById("operatorGroupCount");
+    const operatorTeamsPerGroup = document.getElementById("operatorTeamsPerGroup");
+    const operatorAgenda = document.getElementById("operatorAgenda");
+    const operatorTickerTeams = document.getElementById("operatorTickerTeams");
+    const operatorPathwaySteps = document.getElementById("operatorPathwaySteps");
+    const operatorFacts = document.getElementById("operatorFacts");
+    const slotInputGrid = document.getElementById("slotInputGrid");
+    const applySettingsButton = document.getElementById("applySettingsButton");
+    const drawStatus = document.getElementById("drawStatus");
+    const statusButton = document.getElementById("statusButton");
+    const clearButton = document.getElementById("clearButton");
+    const slotValues = new Map();
+
+    function cleanSlotText(value) {
+      return value.replace(/\s+/g, " ").trim().slice(0, 32);
+    }
+
+    function cleanDisplayText(value, maxLength = 80) {
+      return value.replace(/\s+/g, " ").trim().slice(0, maxLength);
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function getGroupName(index, total) {
+      if (total === 1) return "Group Phase";
+      return `Group ${String.fromCharCode(65 + index)}`;
+    }
+
+    function getSlotKey(groupIndex, slotNumber) {
+      return `${groupIndex + 1}-${slotNumber}`;
+    }
+
+    function getGroupCount() {
+      return Math.min(8, Math.max(1, Number(operatorGroupCount.value) || 1));
+    }
+
+    function getTeamsPerGroup() {
+      return Math.min(12, Math.max(1, Number(operatorTeamsPerGroup.value) || 8));
+    }
+
+    function syncSlot(slotKey, value) {
+      const cleaned = cleanSlotText(value);
+      slotValues.set(slotKey, cleaned);
+      const slot = document.querySelector(`[data-slot="${slotKey}"]`);
+      const input = document.querySelector(`[data-input-slot="${slotKey}"]`);
+      if (slot && slot.textContent !== cleaned) slot.textContent = cleaned;
+      if (input && input.value !== cleaned) input.value = cleaned;
+    }
+
+    function makeSlot(groupIndex, slotNumber) {
+      const key = getSlotKey(groupIndex, slotNumber);
+      const value = escapeHtml(slotValues.get(key) || "");
+      return `
+        <div class="slot">
+          <div class="slot-num">${pad(slotNumber)}</div>
+          <div class="slot-name" data-slot="${key}" contenteditable="true" spellcheck="false" aria-label="${getGroupName(groupIndex, getGroupCount())} slot ${slotNumber}">${value}</div>
+          <div class="slot-mark"></div>
+        </div>`;
+    }
+
+    function renderGroups() {
+      const groupCount = getGroupCount();
+      const teamsPerGroup = getTeamsPerGroup();
+      groupsContainer.innerHTML = Array.from({ length: groupCount }, (_, groupIndex) => {
+        const groupName = getGroupName(groupIndex, groupCount);
+        const slots = Array.from({ length: teamsPerGroup }, (_slot, slotIndex) => makeSlot(groupIndex, slotIndex + 1)).join("");
+        return `
+          <div class="group-card">
+            <div class="group-head">
+              <div class="group-letter">${groupName.split(" ")[0]} <small>${groupName.split(" ").slice(1).join(" ") || "Phase"}</small></div>
+              <div class="group-meta">${teamsPerGroup} Team Slots</div>
+            </div>
+            <div class="slots" aria-label="${groupName} team slots">${slots}</div>
+          </div>`;
+      }).join("");
+      bindSlotEditors();
+      renderSlotInputs();
+    }
+
+    function renderSlotInputs() {
+      const groupCount = getGroupCount();
+      const teamsPerGroup = getTeamsPerGroup();
+      slotInputGrid.innerHTML = Array.from({ length: groupCount }, (_, groupIndex) => {
+        const groupName = getGroupName(groupIndex, groupCount);
+        const fields = Array.from({ length: teamsPerGroup }, (_slot, slotIndex) => {
+          const slotNumber = slotIndex + 1;
+          const key = getSlotKey(groupIndex, slotNumber);
+          return `<label>${escapeHtml(groupName)} ${pad(slotNumber)}<input data-input-slot="${key}" value="${escapeHtml(slotValues.get(key) || "")}" placeholder="${escapeHtml(groupName)} Slot ${pad(slotNumber)}" /></label>`;
+        }).join("");
+        return fields;
+      }).join("");
+      document.querySelectorAll("[data-input-slot]").forEach((input) => {
+        input.addEventListener("input", () => syncSlot(input.dataset.inputSlot, input.value));
+      });
+    }
+
+    function bindSlotEditors() {
+      document.querySelectorAll(".slot-name").forEach((slot) => {
+        slot.addEventListener("input", () => syncSlot(slot.dataset.slot, slot.textContent));
+        slot.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            const allSlots = [...document.querySelectorAll(".slot-name")];
+            const next = allSlots[allSlots.indexOf(slot) + 1];
+            if (next) next.focus();
+          }
+        });
+      });
+    }
+
+    function renderTicker() {
+      const teams = operatorTickerTeams.value
+        .split(/\r?\n|,/)
+        .map((team) => team.trim())
+        .filter(Boolean);
+      const fallback = ["Higher Ground Assembly", "Christ Villa", "New Wine Assembly", "Jesus House Elkridge", "NCCC FC", "Jesus House FC", "Victory Temple Bowie", "Calvary Chapel"];
+      const list = teams.length ? teams : fallback;
+      const content = list.map((team) => `<span>${escapeHtml(team)}</span><span class="sep"></span>`).join("");
+      ticker.innerHTML = content + content;
+    }
+
+    function parsePathwaySteps() {
+      return operatorPathwaySteps.value
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => {
+          const parts = line.split("|").map((part) => cleanDisplayText(part, 120));
+          return {
+            title: parts[0] || "Pathway Step",
+            copy: parts[1] || "",
+            tag: parts[2] || ""
+          };
+        });
+    }
+
+    function renderPathwayCard() {
+      const steps = parsePathwaySteps();
+      const fallback = [
+        { title: "League Phase", copy: "Four match rounds for every team across the opening table.", tag: "Rounds 1-4" },
+        { title: "Play-In", copy: "Middle qualifiers battle for the remaining semi-final places.", tag: "Knockout entry" },
+        { title: "Semi-Finals", copy: "Top contenders meet under knockout rules in the final four.", tag: "Final four" },
+        { title: "3rd Place", copy: "The final podium place is decided on closing day.", tag: "Bronze match" },
+        { title: "Grand Final", copy: "The championship match crowns the Jesus Champions League winner.", tag: "Title match" }
+      ];
+      const list = steps.length ? steps : fallback;
+      pathwayCard.querySelector(".pathway-flow").innerHTML = list.map((step) => `
+        <div class="pathway-step">
+          <strong>${escapeHtml(step.title)}</strong>
+          <small>${escapeHtml(step.copy)}</small>
+          <em>${escapeHtml(step.tag)}</em>
+        </div>
+      `).join("");
+    }
+
+    function renderFacts() {
+      const nextFacts = operatorFacts.value
+        .split(/\r?\n/)
+        .map((fact) => cleanDisplayText(fact, 120))
+        .filter(Boolean);
+      facts = nextFacts.length ? nextFacts : ["8 teams. One champion."];
+      factIndex = Math.min(factIndex, facts.length - 1);
+      factText.textContent = facts[factIndex];
+    }
+
+    function applyOperatorSettings() {
+      const title = cleanDisplayText(operatorTournament.value, 96) || "Jesus Champions League 2026";
+      const city = cleanDisplayText(operatorCity.value, 48) || "Baltimore";
+      const state = cleanDisplayText(operatorState.value, 48) || "Maryland";
+      tournamentTitle.textContent = title;
+      introTitle.textContent = `${title} Official Draw`;
+      locationDisplay.textContent = `${city}, ${state}`;
+      mainContent.classList.toggle("agenda-hidden", operatorAgenda.value === "off");
+      renderTicker();
+      renderPathwayCard();
+      renderFacts();
+      renderGroups();
+    }
+
+    function setPathwayVisible(isVisible) {
+      pathwayCard.classList.toggle("is-hidden", !isVisible);
+    }
+
+    function togglePathway() {
+      setPathwayVisible(pathwayCard.classList.contains("is-hidden"));
+    }
+
+    function togglePathwayOverlay() {
+      pathwayOverlay.classList.toggle("is-visible");
+    }
+
+    function toggleOperatorPanel() {
+      operatorPanel.classList.toggle("is-visible");
+    }
+
+    [operatorTournament, operatorCity, operatorState, operatorTickerTeams, operatorPathwaySteps, operatorFacts, operatorAgenda].forEach((control) => {
+      control.addEventListener("input", applyOperatorSettings);
+      control.addEventListener("change", applyOperatorSettings);
+    });
+
+    [operatorGroupCount, operatorTeamsPerGroup].forEach((control) => {
+      control.addEventListener("change", applyOperatorSettings);
+      control.addEventListener("input", applyOperatorSettings);
+    });
+
+    statusButton.addEventListener("click", () => {
+      const isLive = drawStatus.classList.toggle("is-live");
+      drawStatus.textContent = isLive ? "Draw In Progress" : "Awaiting Draw";
+      statusButton.textContent = isLive ? "Reset Status" : "Start Draw";
+    });
+
+    setPathwayVisible(true);
+    applySettingsButton.addEventListener("click", applyOperatorSettings);
+    applyOperatorSettings();
+
+    clearButton.addEventListener("click", () => {
+      slotValues.clear();
+      renderGroups();
+    });
+  </script>
+</body>
+</html>
